@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Resource Hub</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f2f2f2;
+    }
+    header {
+      background-color: #4CAF50;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    .search-bar {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem;
+      background: white;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .search-bar input, .search-bar select {
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+    .tabs {
+      display: flex;
+      justify-content: center;
+      background: #ddd;
+      padding: 0.5rem;
+    }
+    .tabs button {
+      padding: 0.5rem 1rem;
+      margin: 0 0.5rem;
+      border: none;
+      background: white;
+      cursor: pointer;
+    }
+    .tabs button.active {
+      background: #4CAF50;
+      color: white;
+    }
+    .content {
+      padding: 1rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      background: white;
+      padding: 1rem;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    #teacher-panel {
+      display: none;
+      padding: 1rem;
+      background: #fff3cd;
+      border-top: 1px solid #ccc;
+    }
+    #teacher-panel input, #teacher-panel select {
+      display: block;
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      width: 100%;
+    }
+    #teacher-panel button {
+      padding: 0.5rem 1rem;
+      background: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Study Resource Hub</h1>
+  </header>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search resources...">
+    <select id="classFilter">
+      <option value="">All Classes</option>
+      <option value="Class 6">Class 6</option>
+      <option value="Class 7">Class 7</option>
+      <option value="Class 8">Class 8</option>
+    </select>
+    <select id="subjectFilter">
+      <option value="">All Subjects</option>
+      <option value="Math">Math</option>
+      <option value="Science">Science</option>
+      <option value="English">English</option>
+    </select>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-button active" onclick="switchTab('files', event)">Files</button>
+    <button class="tab-button" onclick="switchTab('videos', event)">Videos</button>
+  </div>
+
+  <div id="content-area" class="content"></div>
+
+  <div id="teacher-panel">
+    <h3>Add Resource</h3>
+    <select id="newType">
+      <option value="files">File</option>
+      <option value="videos">Video</option>
+    </select>
+    <input type="text" id="newTitle" placeholder="Title">
+    <input type="text" id="newClass" placeholder="Class (e.g. Class 7)">
+    <input type="text" id="newSubject" placeholder="Subject (e.g. Math)">
+    <input type="url" id="newURL" placeholder="Link (e.g. GitHub file or YouTube video)">
+    <button onclick="addResource()">Add</button>
+  </div>
+
+  <script>
+    let currentTab = 'files';
+
+    const resourceData = {
+      files: [
+        {
+          title: "Algebra Notes",
+          class: "Class 7",
+          subject: "Math",
+          url: "https://yourusername.github.io/yourrepo/files/algebra_notes.pdf"
+        },
+        {
+          title: "Photosynthesis Worksheet",
+          class: "Class 8",
+          subject: "Science",
+          url: "https://yourusername.github.io/yourrepo/files/photosynthesis.pdf"
+        }
+      ],
+      videos: [
+        {
+          title: "Introduction to Motion",
+          class: "Class 8",
+          subject: "Science",
+          url: "https://www.youtube.com/watch?v=examplevideoid"
+        }
+      ]
+    };
+
+    function switchTab(tab, event) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      loadContent();
+    }
+
+    function loadContent() {
+      const contentArea = document.getElementById('content-area');
+      contentArea.innerHTML = '';
+
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const classFilter = document.getElementById('classFilter').value;
+      const subjectFilter = document.getElementById('subjectFilter').value;
+
+      const filtered = resourceData[currentTab].filter(item => {
+        return (!search || item.title.toLowerCase().includes(search)) &&
+               (!classFilter || item.class === classFilter) &&
+               (!subjectFilter || item.subject === subjectFilter);
+      });
+
+      filtered.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <h3>${item.title}</h3>
+          <p><strong>Class:</strong> ${item.class}</p>
+          <p><strong>Subject:</strong> ${item.subject}</p>
+          ${currentTab === 'files' ? `<a href="${item.url}" target="_blank">Download</a>` : `<a href="${item.url}" target="_blank">Watch Video</a>`}
+        `;
+        contentArea.appendChild(card);
+      });
+    }
+
+    function addResource() {
+      const type = document.getElementById('newType').value;
+      const title = document.getElementById('newTitle').value;
+      const className = document.getElementById('newClass').value;
+      const subject = document.getElementById('newSubject').value;
+      const url = document.getElementById('newURL').value;
+
+      if (!title || !className || !subject || !url) {
+        alert('Please fill out all fields.');
+        return;
+      }
+
+      resourceData[type].push({ title, class: className, subject, url });
+      loadContent();
+
+      document.getElementById('newTitle').value = '';
+      document.getElementById('newClass').value = '';
+      document.getElementById('newSubject').value = '';
+      document.getElementById('newURL').value = '';
+    }
+
+    if (window.location.hash === '#admin') {
+      document.getElementById('teacher-panel').style.display = 'block';
+    }
+
+    document.getElementById('searchInput').addEventListener('input', loadContent);
+    document.getElementById('classFilter').addEventListener('change', loadContent);
+    document.getElementById('subjectFilter').addEventListener('change', loadContent);
+
+    loadContent();
+  </script>
+</body>
+</html>
